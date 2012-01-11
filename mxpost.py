@@ -41,7 +41,7 @@ methods is described below.
 import time
 import re
 
-from nltk import TaggerI, FreqDist, untag, classify, config_megam
+from nltk import TaggerI, FreqDist, untag, config_megam
 from nltk.classify.maxent import MaxentClassifier
                   
 
@@ -113,7 +113,6 @@ class MaxentPosTagger(TaggerI):
         if trace > 0:
             print "time to train the classifier: {0}".format(round(t2-t1, 3))
 
-
     def gen_feat_freqs(self, featuresets):
         """
         Generates a frequency distribution of joint features (feature, tag)
@@ -155,7 +154,7 @@ class MaxentPosTagger(TaggerI):
         """
         word_freqdist = FreqDist()
         for tagged_sent in train_sents:
-            for (word, tag) in tagged_sent:
+            for (word, _tag) in tagged_sent:
                 word_freqdist.inc(word)
         return word_freqdist
 
@@ -179,7 +178,7 @@ class MaxentPosTagger(TaggerI):
         for tagged_sent in train_sents:
             history = []
             untagged_sent = untag(tagged_sent)
-            for (i, (word, tag)) in enumerate(tagged_sent):
+            for (i, (_word, tag)) in enumerate(tagged_sent):
                 featuresets.append( (self.extract_feats(untagged_sent, i,
                     history, rare_word_cutoff), tag) )
                 history.append(tag)
@@ -239,7 +238,7 @@ class MaxentPosTagger(TaggerI):
 
         for (feat_dict, tag) in featuresets:
             for (feature, value) in feat_dict.items():
-                feat_value_tag = ((feature, value),tag)
+                feat_value_tag = ((feature, value), tag)
                 if self.features_freqdist[feat_value_tag] < rare_feat_cutoff:
                     if feature not in never_cutoff_features:
                         feat_dict.pop(feature)
@@ -339,7 +338,7 @@ class MaxentPosTagger(TaggerI):
                 "t-2 t-1": "%s %s" % (history[i-2], history[i-1])})
 
         #get features: w+1, w+2. takes care of the end of a sentence.
-        for inc in [1,2]:
+        for inc in [1, 2]:
             try:
                 features["w+%i" % (inc)] = sentence[i+inc]
             except IndexError:
@@ -383,7 +382,7 @@ class MaxentPosTagger(TaggerI):
         part-of-speech tag.
         """
         history = []
-        for (i, word) in enumerate(sentence):
+        for i in xrange(len(sentence)):
             featureset = self.extract_feats(sentence, i, history,
                                                rare_word_cutoff)
             tag = self.classifier.classify(featureset)
@@ -428,7 +427,8 @@ def demo(corpus, num_sents):
 
 
 if __name__ == '__main__':
-    #~ demo("treebank", 200)
+    demo("treebank", 200)
+    #~ featuresets = demo_debugger("treebank", 10000)
     print "\n\n\n"
 
 
