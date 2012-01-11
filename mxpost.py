@@ -3,7 +3,7 @@
 # Author: Arne Neumann
 # Licence: GPL 3
 
-__docformat__ = 'epytext en'
+#__docformat__ = 'epytext en'
 
 """
 A I{part-of-speech tagger} that uses NLTK's build-in L{Maximum Entropy
@@ -38,10 +38,12 @@ in the Python interpreter. Proper usage of demo() and all other functions and
 methods is described below.
 """
 
-from nltk import (TaggerI, FreqDist, untag, MaxentClassifier, classify,
-                  config_megam)
 import time
 import re
+
+from nltk import TaggerI, FreqDist, untag, classify, config_megam
+from nltk.classify.maxent import MaxentClassifier
+                  
 
 PATH_TO_MEGAM_EXECUTABLE = "/usr/bin/megam"
 config_megam(PATH_TO_MEGAM_EXECUTABLE)
@@ -426,7 +428,7 @@ def demo(corpus, num_sents):
 
 
 if __name__ == '__main__':
-    demo("treebank", 200)
+    #~ demo("treebank", 200)
     print "\n\n\n"
 
 
