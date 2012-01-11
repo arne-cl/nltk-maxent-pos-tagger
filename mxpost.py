@@ -1,38 +1,42 @@
 # -*- coding: utf-8 -*-
-# Natural Language Toolkit: Maximum Entropy Part-of-Speech Tagger
+# Maximum Entropy Part-of-Speech Tagger for NLTK (Natural Language Toolkit)
 # Author: Arne Neumann
-#
-# Please install the MEGAM package (http://hal3.name/megam),
-# otherwise training will take forever.
-#
-# To use the demo, please install either 'brown' or 'treebank'
-# with
-#
-# import nltk
-# nltk.download()
-#
-# in the Python interpreter. Proper usage of demo() and all other functions and
-# methods is described below.
+# Licence: GPL 3
+
+__docformat__ = 'epytext en'
 
 """
 A I{part-of-speech tagger} that uses NLTK's build-in L{Maximum Entropy
-models<nltk.MaxentClassifier>} to find the most likely I{part-of-speech tag} (POS) for
-each word in a given sequence.
+models<nltk.MaxentClassifier>} to find the most likely I{part-of-speech
+tag} (POS) for each word in a given sequence.
 
-The tagger will be trained on a corpus of tagged sentences. For every word in
-the corpus, a C{tuple} consisting of a C{dictionary} of features from the word's context (e.g.
-preceding/succeeding words and tags, word prefixes/suffixes etc.) and the
-word's tag will be generated. The maximum entropy classifier will learn a
-model from these tuples that will be used by the tagger to find the most likely
-POS-tag for any given word, even unseen ones.
+The tagger will be trained on a corpus of tagged sentences. For every word
+in the corpus, a C{tuple} consisting of a C{dictionary} of features from
+the word's context (e.g. preceding/succeeding words and tags, word
+prefixes/suffixes etc.) and the word's tag will be generated.
+The maximum entropy classifier will learn a model from these tuples that
+will be used by the tagger to find the most likely POS-tag for any given
+word, even unseen ones.
 
 The tagger and the featuresets chosen for training are implemented as described
 in Ratnaparkhi, Adwait (1996). A Maximum Entropy Model for Part-Of-Speech
 Tagging. In Proceedings of the ARPA Human Language Technology Workshop. Pages
 250-255.
-"""
 
-__docformat__ = 'epytext en'
+Usage notes:
+============
+
+Please install the MEGAM package (http://hal3.name/megam),
+otherwise training will take forever.
+
+To use the demo, please install either 'brown' or 'treebank' with::
+
+    import nltk
+    nltk.download()
+
+in the Python interpreter. Proper usage of demo() and all other functions and
+methods is described below.
+"""
 
 from nltk import (TaggerI, FreqDist, untag, MaxentClassifier, classify,
                   config_megam)
@@ -48,7 +52,8 @@ class MaxentPosTagger(TaggerI):
     MaxentPosTagger is a part-of-speech tagger based on Maximum Entropy models.
     """
     def train(self, train_sents, algorithm='megam', rare_word_cutoff=5,
-            rare_feature_cutoff=5, uppercase_letters='[A-Z]', trace=3, **cutoffs):
+              rare_feat_cutoff=5, uppercase_letters='[A-Z]', trace=3,
+              **cutoffs):
         """
         MaxentPosTagger trains a Maximum Entropy model from a C{list} of tagged
         sentences.
@@ -68,12 +73,12 @@ class MaxentPosTagger(TaggerI):
 
         @type rare_word_cutoff: C{int}
         @param rare_word_cutoff: Words with less occurrences than
-        C{rare_word_cutoff} will be treated differently by L{extract_features}
+        C{rare_word_cutoff} will be treated differently by L{extract_feats}
         than non-rare words (cf. Ratnaparkhi 1996).
 
-        @type rare_feature_cutoff: C{int}
-        @param rare_feature_cutoff: ignore features that occur less than
-        C{rare_feature_cutoff} during training.
+        @type rare_feat_cutoff: C{int}
+        @param rare_feat_cutoff: ignore features that occur less than
+        C{rare_feat_cutoff} during training.
 
         @type uppercase_letters: C{regex}
         @param uppercase_letters: a regular expression that covers all
@@ -93,25 +98,26 @@ class MaxentPosTagger(TaggerI):
               - C{max_iter=v}: Terminate after C{v} iterations.
        """
         self.uppercase_letters = uppercase_letters
-        self.word_freqdist = self.generate_word_frequencies(train_sents)
-        self.featuresets = self.generate_featuresets(train_sents,
+        self.word_freqdist = self.gen_word_freqs(train_sents)
+        self.featuresets = self.gen_featsets(train_sents,
                 rare_word_cutoff)
-        self.features_freqdist = self.generate_feature_frequencies(self.featuresets)
-        self.cutoff_rare_features(self.featuresets, rare_feature_cutoff)
+        self.features_freqdist = self.gen_feat_freqs(self.featuresets)
+        self.cutoff_rare_feats(self.featuresets, rare_feat_cutoff)
 
         t1 = time.time()
-        self.classifier = MaxentClassifier.train(self.featuresets, algorithm, trace, **cutoffs)
+        self.classifier = MaxentClassifier.train(self.featuresets, algorithm,
+                                                 trace, **cutoffs)
         t2 = time.time()
         if trace > 0:
             print "time to train the classifier: {0}".format(round(t2-t1, 3))
 
 
-    def generate_feature_frequencies(self, featuresets):
+    def gen_feat_freqs(self, featuresets):
         """
-        Generates a frequency distribution of joint features (feature,
-        tag) tuples. The frequency distribution will be used by the tagger to
-        determine which (rare) features should not be considered during training
-        (feature cutoff).
+        Generates a frequency distribution of joint features (feature, tag)
+        tuples. The frequency distribution will be used by the tagger to
+        determine which (rare) features should not be considered during
+        training (feature cutoff).
 
         This is how joint features look like::
             (('t-2 t-1', 'IN DT'), 'NN')
@@ -133,7 +139,7 @@ class MaxentPosTagger(TaggerI):
                 features_freqdist.inc( ((feature, value), tag)  )
         return features_freqdist
 
-    def generate_word_frequencies(self, train_sents):
+    def gen_word_freqs(self, train_sents):
         """
         Generates word frequencies from the training sentences for the feature
         extractor.
@@ -151,7 +157,7 @@ class MaxentPosTagger(TaggerI):
                 word_freqdist.inc(word)
         return word_freqdist
 
-    def generate_featuresets(self, train_sents, rare_word_cutoff):
+    def gen_featsets(self, train_sents, rare_word_cutoff):
         """
         Generates featuresets for each token in the training sentences.
 
@@ -160,7 +166,7 @@ class MaxentPosTagger(TaggerI):
 
         @type rare_word_cutoff: C{int}
         @param rare_word_cutoff: Words with less occurrences than
-        C{rare_word_cutoff} will be treated differently by L{extract_features}
+        C{rare_word_cutoff} will be treated differently by L{extract_feats}
         than non-rare words (cf. Ratnaparkhi 1996).
 
         @rtype: {list} of C{tuples} of (C{dict}, C{str})
@@ -172,13 +178,13 @@ class MaxentPosTagger(TaggerI):
             history = []
             untagged_sent = untag(tagged_sent)
             for (i, (word, tag)) in enumerate(tagged_sent):
-                featuresets.append( (self.extract_features(untagged_sent, i,
+                featuresets.append( (self.extract_feats(untagged_sent, i,
                     history, rare_word_cutoff), tag) )
                 history.append(tag)
         return featuresets
 
 
-    def cutoff_rare_features(self, featuresets, rare_feature_cutoff):
+    def cutoff_rare_feats(self, featuresets, rare_feat_cutoff):
         """
         Cuts off rare features to reduce training time and prevent overfitting.
 
@@ -199,7 +205,7 @@ class MaxentPosTagger(TaggerI):
             'suffix(4)': 'mont'},
             'NNP')
 
-            C{cutoff_rare_features} would then remove the rare joint features::
+            C{cutoff_rare_feats} would then remove the rare joint features::
 
                 (('suffix(1)', 't'), 'NNP')
                 (('suffix(3)', 'ont'), 'NNP')
@@ -221,9 +227,9 @@ class MaxentPosTagger(TaggerI):
         @param featuresets: a list of tuples that contain the featureset of a
         word from the training set and its POS tag
 
-        @type rare_feature_cutoff: C{int}
-        @param rare_feature_cutoff: if a (context information feature, tag)
-        tuple occurs less than C{rare_feature_cutoff} times in the training
+        @type rare_feat_cutoff: C{int}
+        @param rare_feat_cutoff: if a (context information feature, tag)
+        tuple occurs less than C{rare_feat_cutoff} times in the training
         set, then its corresponding feature will be removed from the
         C{featuresets} to be learned.
        """
@@ -232,16 +238,16 @@ class MaxentPosTagger(TaggerI):
         for (feat_dict, tag) in featuresets:
             for (feature, value) in feat_dict.items():
                 feat_value_tag = ((feature, value),tag)
-                if self.features_freqdist[feat_value_tag] < rare_feature_cutoff:
+                if self.features_freqdist[feat_value_tag] < rare_feat_cutoff:
                     if feature not in never_cutoff_features:
                         feat_dict.pop(feature)
 
 
-    def extract_features(self, sentence, i, history, rare_word_cutoff=5):
+    def extract_feats(self, sentence, i, history, rare_word_cutoff=5):
         """
-        Generates a featureset from a word (in a sentence). The features were chosen as
-        described in Ratnaparkhi (1996) and his Java software package
-        U{MXPOST<ftp://ftp.cis.upenn.edu/pub/adwait/jmx>}.
+        Generates a featureset from a word (in a sentence). The features
+        were chosen as described in Ratnaparkhi (1996) and his Java
+        software package U{MXPOST<ftp://ftp.cis.upenn.edu/pub/adwait/jmx>}.
 
         The following features are extracted:
 
@@ -249,14 +255,16 @@ class MaxentPosTagger(TaggerI):
               t-1}), last words (C{w-1}) and (C{w-2}), next words (C{w+1}) and
               (C{w+2})
             - features for non-rare words: current word (C{w})
-            - features for rare words: word suffixes (last 1-4 letters), word prefixes (first 1-4 letters),
+            - features for rare words: word suffixes (last 1-4 letters),
+              word prefixes (first 1-4 letters),
               word contains number (C{bool}), word contains uppercase character
               (C{bool}), word contains hyphen (C{bool})
 
         Ratnaparkhi experimented with his tagger on the Wall Street Journal
-        corpus (Penn Treebank project). He found that the tagger yields better
-        results when words which occur less than 5 times are treated as rare.
-        As your mileage may vary, please adjust L{rare_word_cutoff} accordingly.
+        corpus (Penn Treebank project). He found that the tagger yields
+        better results when words which occur less than 5 times are treated
+        as rare. As your mileage may vary, please adjust
+        L{rare_word_cutoff} accordingly.
 
         Examples
         ========
@@ -314,16 +322,19 @@ class MaxentPosTagger(TaggerI):
         number = re.compile("\d")
         uppercase = re.compile(self.uppercase_letters)
 
-        #get features: w-1, w-2, t-1, t-2. takes care of the beginning of a sentence
+        #get features: w-1, w-2, t-1, t-2.
+        #takes care of the beginning of a sentence
         if i == 0: #first word of sentence
-            features.update({"w-1": "<START>", "t-1": "<START>", "w-2": "<START>",
-                    "t-2 t-1": "<START> <START>"})
+            features.update({"w-1": "<START>", "t-1": "<START>",
+                             "w-2": "<START>", "t-2 t-1": "<START> <START>"})
         elif i == 1: #second word of sentence
             features.update({"w-1": sentence[i-1], "t-1": history[i-1],
-                    "w-2": "<START>", "t-2 t-1": "<START> %s" % (history[i-1])})
+                             "w-2": "<START>",
+                             "t-2 t-1": "<START> %s" % (history[i-1])})
         else:
             features.update({"w-1": sentence[i-1], "t-1": history[i-1],
-                "w-2": sentence[i-2], "t-2 t-1": "%s %s" % (history[i-2], history[i-1])})
+                "w-2": sentence[i-2],
+                "t-2 t-1": "%s %s" % (history[i-2], history[i-1])})
 
         #get features: w+1, w+2. takes care of the end of a sentence.
         for inc in [1,2]:
@@ -332,15 +343,18 @@ class MaxentPosTagger(TaggerI):
             except IndexError:
                 features["w+%i" % (inc)] = "<END>"
 
-        if self.word_freqdist[sentence[i]] >= rare_word_cutoff: #additional features for 'non-rare' words
+        if self.word_freqdist[sentence[i]] >= rare_word_cutoff:
+            #additional features for 'non-rare' words
             features["w"] = sentence[i]
 
         else: #additional features for 'rare' or 'unseen' words
-            features.update({"suffix(1)": sentence[i][-1:], "suffix(2)": sentence[i][-2:],
-                    "suffix(3)": sentence[i][-3:], "suffix(4)": sentence[i][-4:],
-                    "prefix(1)": sentence[i][:1], "prefix(2)": sentence[i][:2],
-                    "prefix(3)": sentence[i][:3], "prefix(4)": sentence[i][:4]})
-            if hyphen.search(sentence[i]) != None: #set True, if regex is found at least once
+            features.update({"suffix(1)": sentence[i][-1:],
+                "suffix(2)": sentence[i][-2:], "suffix(3)": sentence[i][-3:],
+                "suffix(4)": sentence[i][-4:], "prefix(1)": sentence[i][:1],
+                "prefix(2)": sentence[i][:2], "prefix(3)": sentence[i][:3],
+                "prefix(4)": sentence[i][:4]})
+            if hyphen.search(sentence[i]) != None:
+                #set True, if regex is found at least once
                 features["contains-hyphen"] = True
             if number.search(sentence[i]) != None:
                 features["contains-number"] = True
@@ -368,8 +382,8 @@ class MaxentPosTagger(TaggerI):
         """
         history = []
         for (i, word) in enumerate(sentence):
-            featureset = self.extract_features(sentence, i, history,
-                    rare_word_cutoff)
+            featureset = self.extract_feats(sentence, i, history,
+                                               rare_word_cutoff)
             tag = self.classifier.classify(featureset)
             history.append(tag)
         return zip(sentence, history)
@@ -378,7 +392,8 @@ class MaxentPosTagger(TaggerI):
 def demo(corpus, num_sents):
     """
     Loads a few sentences from the Brown corpus or the Wall Street Journal
-    corpus, trains them, tests the tagger's accuracy and tags an unseen sentence.
+    corpus, trains them, tests the tagger's accuracy and tags an unseen
+    sentence.
 
     @type corpus: C{str}
     @param corpus: Name of the corpus to load, either C{brown} or C{treebank}.
@@ -406,11 +421,12 @@ def demo(corpus, num_sents):
     print "classify unseen sentence: ", maxent_tagger.tag(["This", "is", "so",
         "slow", "!"])
     print "\n\n"
-    print "show the 10 most informative features: ", maxent_tagger.classifier.show_most_informative_features(10)
+    print "show the 10 most informative features:"
+    print maxent_tagger.classifier.show_most_informative_features(10)
 
 
 if __name__ == '__main__':
-    demo("treebank", 20)
+    demo("treebank", 200)
     print "\n\n\n"
 
 
