@@ -40,6 +40,7 @@ methods is described below.
 
 import time
 import re
+from collections import defaultdict
 
 from nltk import TaggerI, FreqDist, untag, config_megam
 from nltk.classify.maxent import MaxentClassifier
@@ -134,10 +135,10 @@ class MaxentPosTagger(TaggerI):
         counting how often each (context information feature, tag) tuple occurs
         in the training sentences.
         """
-        features_freqdist = FreqDist()
+        features_freqdist = defaultdict(int)
         for (feat_dict, tag) in featuresets:
             for (feature, value) in feat_dict.items():
-                features_freqdist.inc( ((feature, value), tag)  )
+                features_freqdist[ ((feature, value), tag) ] += 1
         return features_freqdist
 
     def gen_word_freqs(self, train_sents):
@@ -233,7 +234,7 @@ class MaxentPosTagger(TaggerI):
         tuple occurs less than C{rare_feat_cutoff} times in the training
         set, then its corresponding feature will be removed from the
         C{featuresets} to be learned.
-       """
+        """
         never_cutoff_features = set(['w','t'])
 
         for (feat_dict, tag) in featuresets:
