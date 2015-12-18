@@ -31,6 +31,13 @@ a Python shell:
 Download at least `brown` or `treebank`, as nltk-maxent-pos-tagger uses them
 for its `demo()` function.
 
+2. (Mac) Install MEGAM.
+
+On Mac, it is easy to install MEGAM using brew:
+
+    brew tap homebrew/science
+    brew install megam
+
 Usage
 -----
 
