@@ -156,7 +156,7 @@ class MaxentPosTagger(TaggerI):
         word_freqdist = FreqDist()
         for tagged_sent in train_sents:
             for (word, _tag) in tagged_sent:
-                word_freqdist.inc(word)
+                word_freqdist[word] += 1
         return word_freqdist
 
     def gen_featsets(self, train_sents, rare_word_cutoff):
