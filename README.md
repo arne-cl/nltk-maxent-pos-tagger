@@ -58,7 +58,8 @@ Meta
 
 Status: Beta. I wrote this in 2008 as a semester project for a class on NLP tools.  
 Licence: GPL Version 3  
-Author: Arne Neumann <neumann.arne@gmail.com>  
+Original Author: Arne Neumann  
+Contributors: Arne Neumann, Andrew Drozdov
 
 
 TODO
